@@ -1,0 +1,892 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>발표 무대</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --bg:#fbfaf6; --card:#ffffff; --line:#ece8df; --soft:#f4f2ec;
+  --ink:#1d2433; --muted:#7b7f89;
+  --mint:#22b386; --mint-dk:#16916b; --mint-lt:#dcf4ea;
+  --lemon:#ffd24a; --lemon-lt:#fff4c7;
+  --coral:#ff7357; --coral-lt:#ffe6df;
+  --sky:#5fb2ff; --sky-lt:#e4f1ff;
+  --lilac:#a993ff; --lilac-lt:#eee9ff;
+  --wait:#b3b7bf; --ok:#22b386; --near:#f4a422; --over:#ef5444;
+  --sans:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --num:"Space Grotesk","Pretendard",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--sans);color:var(--ink);background:var(--bg);font-size:15px;-webkit-font-smoothing:antialiased;display:flex;flex-direction:column;min-height:100vh}
+button{font-family:inherit;cursor:pointer;color:inherit}
+button:disabled{opacity:.45;cursor:default}
+input,textarea,select{font-family:inherit;font-size:inherit;color:inherit}
+.eyebrow{font-family:var(--num);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.hidden{display:none!important}
+
+/* 상단 */
+.top{min-height:72px;display:flex;align-items:center;gap:16px;padding:12px 28px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;letter-spacing:-.02em}
+.tabs{display:flex;gap:4px;background:var(--soft);padding:4px;border-radius:999px;margin-left:16px}
+.tabs button{border:0;background:transparent;padding:9px 18px;border-radius:999px;font-weight:600;font-size:14.5px;color:var(--muted);display:flex;gap:8px;align-items:center}
+.tabs button i{font-style:normal;font-family:var(--num);font-size:12px}
+.tabs button.on{background:var(--card);color:var(--ink);box-shadow:0 2px 8px rgba(29,36,51,.08)}
+.sp{flex:1}
+.clsSel{display:flex;align-items:center;gap:8px;padding:0 6px 0 14px;border:1px solid var(--line);border-radius:999px;background:var(--card);height:42px}
+.clsSel::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--mint)}
+.clsSel select{border:0;background:transparent;font-weight:600;font-size:14.5px;height:40px;padding-right:6px;outline:none;max-width:200px}
+.pillbtn{background:var(--ink);color:#fff;border:0;border-radius:999px;padding:0 18px;height:42px;font-weight:600;font-size:14.5px;display:flex;align-items:center;gap:8px}
+.pillbtn.on{background:var(--mint)}
+.iconbtn{width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:var(--card);display:grid;place-items:center}
+
+main{flex:1;display:flex;flex-direction:column;min-height:0}
+.page{flex:1;padding:4px 28px 24px;min-height:0}
+
+/* 공통 카드 */
+.box{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px 18px;display:flex;flex-direction:column;min-height:0}
+.bh{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:8px}
+.bh h4{font-size:14.5px;font-weight:700}
+.tag{font-size:11.5px;font-weight:700;color:#7a5ff0;background:var(--lilac-lt);border-radius:999px;padding:3px 9px}
+.btn{height:50px;border-radius:16px;font:700 16px var(--sans);display:inline-flex;align-items:center;justify-content:center;gap:9px;border:0;padding:0 20px}
+.btn.sm{height:38px;border-radius:12px;font-size:14px;padding:0 14px}
+.btn.white{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.btn.coral{background:var(--coral);color:#fff;box-shadow:0 8px 18px -8px rgba(255,115,87,.8)}
+.btn.mint{background:var(--mint);color:#fff;box-shadow:0 8px 18px -8px rgba(34,179,134,.8)}
+.btn.ink{background:var(--ink);color:#fff}
+.btn.ghost{background:transparent;color:var(--muted);border:1px dashed var(--line)}
+.link{border:0;background:transparent;color:#5a6170;font-size:13px;font-weight:500;padding:6px 4px}
+.link:hover{color:var(--ink)}
+.pill{font-size:11px;font-weight:700;border-radius:999px;padding:2px 8px;white-space:nowrap}
+.p-ok{background:var(--mint-lt);color:var(--mint-dk)}.p-short{background:#eef0f3;color:#6b7280}.p-over{background:#fde3df;color:#d43c2c}.p-none{background:transparent;color:var(--muted);border:1px dashed var(--line)}.p-near{background:#fff0d6;color:#b87300}
+.av{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:11.5px;font-weight:800;flex:none}
+
+/* 발표 탭 */
+.present{display:grid;grid-template-columns:1fr 368px;gap:22px;height:100%}
+.col{display:flex;flex-direction:column;gap:14px;min-height:0}
+.frame{background:#fff;border-radius:20px;box-shadow:0 1px 0 var(--line),0 20px 40px -28px rgba(29,36,51,.35);overflow:hidden;position:relative;flex:1.35;min-height:260px;display:grid;place-items:center}
+.frame canvas,.frame img{max-width:100%;max-height:100%;display:block}
+.frame.drag{outline:3px dashed var(--mint);outline-offset:-10px}
+.empty{text-align:center;color:var(--muted);padding:24px}
+.empty b{display:block;color:var(--ink);font-size:17px;margin:12px 0 6px}
+.empty p{font-size:13.5px;line-height:1.6}
+.empty .row{display:flex;gap:8px;justify-content:center;margin-top:14px;flex-wrap:wrap}
+.cap{display:flex;align-items:center;justify-content:space-between;font-size:13.5px;color:var(--muted);gap:10px;flex-wrap:wrap}
+.file{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 8px 6px 12px;color:var(--ink);font-weight:500;max-width:min(440px,100%);min-width:0}
+.file span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.file b{background:var(--coral-lt);color:var(--coral);font-size:11px;border-radius:5px;padding:2px 6px;font-weight:800;flex:none}
+.file button{border:0;background:var(--soft);width:22px;height:22px;border-radius:50%;font-size:11px;flex:none}
+.pg{display:flex;align-items:center;gap:12px;font-family:var(--num);font-weight:500;font-size:15px}
+.pg button{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--card);font-size:12px}
+.notes{display:grid;grid-template-columns:1.3fr 1fr;gap:14px;flex:1;min-height:170px}
+.notes textarea{flex:1;border:0;resize:none;outline:none;font-size:14px;line-height:1.75;color:#3d4250;background:transparent;min-height:60px}
+.notes .meta{font-size:12px;color:var(--muted);margin-top:6px}
+.mic{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:700;border-radius:999px;padding:5px 11px;border:0;background:var(--soft);color:var(--muted)}
+.mic.on{color:var(--coral);background:var(--coral-lt)}
+.mic .wave{display:inline-flex;gap:2px;align-items:center;height:12px}
+.mic .wave i{display:block;width:2.5px;height:4px;background:currentColor;border-radius:2px}
+.mic.on .wave i{animation:wv .9s ease-in-out infinite}
+.mic.on .wave i:nth-child(2){animation-delay:.15s}.mic.on .wave i:nth-child(3){animation-delay:.3s}.mic.on .wave i:nth-child(4){animation-delay:.45s}
+@keyframes wv{50%{height:12px}}
+.memo{flex:1;background:var(--lemon-lt);border-radius:12px;padding:12px 14px;position:relative;display:flex}
+.memo textarea{color:#4a3f17}
+.memo::after{content:"";position:absolute;right:0;bottom:0;border-style:solid;border-width:0 0 18px 18px;border-color:transparent transparent #fde792 transparent;border-radius:0 0 12px 0}
+
+.now{background:linear-gradient(160deg,#e3f7ef 0%,#eef7ff 70%,#f6f1ff 100%);border-radius:24px;padding:20px 22px 16px;position:relative;overflow:hidden;flex:none}
+.now .illo{position:absolute;right:-6px;top:-4px;width:160px;height:141px;pointer-events:none}
+.now .eyebrow{color:var(--mint-dk);display:flex;align-items:center;gap:8px}
+.now .eyebrow::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--wait)}
+.now.running .eyebrow::before{background:var(--mint);box-shadow:0 0 0 4px rgba(34,179,134,.2);animation:pl 1.4s infinite}
+@keyframes pl{50%{box-shadow:0 0 0 7px rgba(34,179,134,.08)}}
+.now h2{font-size:34px;font-weight:800;letter-spacing:-.03em;margin-top:10px;display:flex;align-items:baseline;gap:10px;position:relative;max-width:220px}
+.now h2 span{font-family:var(--num);font-size:16px;color:var(--muted);font-weight:500;white-space:nowrap}
+.topic{position:relative;width:100%;max-width:230px;border:0;border-bottom:1px dashed transparent;background:transparent;font-size:14px;color:#4c5463;margin-top:4px;padding:2px 0;outline:none}
+.topic:hover,.topic:focus{border-bottom-color:#b9c3c0}
+.clock{font-family:var(--num);font-weight:700;font-size:88px;line-height:1;margin-top:14px;letter-spacing:-.04em;position:relative;font-variant-numeric:tabular-nums;display:flex;align-items:flex-start;gap:10px;transition:color .3s}
+.clock small{font-family:var(--sans);font-size:12.5px;letter-spacing:0;font-weight:700;color:var(--mint-dk);background:#fff;border-radius:999px;padding:4px 10px;margin-top:14px}
+.mwrap{position:relative;margin-top:16px}
+.meter{position:relative;height:12px;border-radius:999px;background:#fff;overflow:hidden}
+.meter i{position:absolute;left:0;top:0;height:100%;border-radius:999px;transition:width .2s linear,background .3s}
+.meter .zmin,.meter .zmax{position:absolute;top:0;bottom:0;width:2px;background:rgba(29,36,51,.18)}
+.ticks{position:relative;height:16px;font-size:11.5px;color:var(--muted);margin-top:7px;font-family:var(--num)}
+.ticks span{position:absolute;transform:translateX(-50%);white-space:nowrap}
+.ticks span:first-child{transform:none}
+.ticks b{color:var(--ink)}
+.status{margin-top:10px;display:inline-flex;align-items:center;gap:8px;font-size:13.5px;font-weight:700;background:#fff;border-radius:999px;padding:7px 12px;color:var(--muted)}
+.acts{display:grid;grid-template-columns:1fr 1.2fr;gap:10px;margin-top:14px}
+.acts .btn{height:54px}
+.sub{display:flex;justify-content:space-between;margin-top:8px}
+.queue{flex:1;min-height:0;overflow:hidden}
+.queue .list{position:relative;overflow:auto;margin:0 -8px;padding:0 8px}
+.r{display:grid;grid-template-columns:34px 1fr auto;align-items:center;padding:9px 6px;border-bottom:1px solid var(--line);font-size:14.5px;font-weight:500;border-radius:10px;cursor:pointer;width:100%;background:transparent;border-left:0;border-right:0;border-top:0;text-align:left}
+.r:hover{background:var(--soft)}
+.r.cur{background:var(--mint-lt)}
+.r .t{font-family:var(--num);font-size:13px;color:var(--muted);display:flex;align-items:center;gap:8px}
+.r .nm{display:flex;align-items:center;gap:6px;min-width:0}
+.r .nm small{font-family:var(--num);color:var(--muted);font-size:12px}
+.r .doc{width:7px;height:7px;border-radius:50%;background:var(--coral);flex:none}
+
+/* 순서 탭 */
+.race{display:flex;flex-direction:column;gap:14px;height:100%}
+.rh{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.rh h1{font-size:28px;font-weight:800;letter-spacing:-.03em;margin-top:6px}
+.rh h1 em{font-style:normal;background:linear-gradient(transparent 60%,var(--lemon) 60%)}
+.seg{display:flex;gap:4px;background:var(--soft);padding:4px;border-radius:999px}
+.seg button{border:0;background:transparent;padding:8px 16px;border-radius:999px;font-size:13.5px;font-weight:600;color:var(--muted)}
+.seg button.on{background:#fff;color:var(--ink);box-shadow:0 2px 8px rgba(29,36,51,.08)}
+.board{flex:1;display:grid;grid-template-columns:1fr 260px;gap:16px;min-height:380px}
+.track{background:#fff;border:1px solid var(--line);border-radius:22px;position:relative;overflow:hidden;padding:10px 0;display:flex;flex-direction:column}
+.lane{position:relative;flex:1;display:flex;align-items:center;min-height:14px;z-index:1}
+.lane:nth-child(odd){background:#f8faf7}
+.lane .nm{width:92px;text-align:right;padding-right:12px;font-size:12px;color:#5f6572;font-weight:500;border:0;background:transparent;height:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lane .nm:hover{color:var(--ink);text-decoration:underline}
+.lane .rn{position:absolute;top:50%;margin-top:-10px;height:20px;display:flex;align-items:center;left:92px}
+.lane .rn::before{content:"";position:absolute;right:14px;top:8px;height:4px;width:0;border-radius:2px;background:linear-gradient(90deg,transparent,var(--c));transition:width .2s}
+.lane.moving .rn::before{width:56px}
+.lane .rn i{position:relative;width:20px;height:20px;border-radius:50%;background:var(--c);border:2.5px solid #fff;box-shadow:0 2px 6px rgba(29,36,51,.2)}
+.lane .rn em{position:absolute;right:26px;font-style:normal;font-family:var(--num);font-size:11px;font-weight:700;background:var(--ink);color:#fff;border-radius:999px;padding:1px 7px;white-space:nowrap}
+.lane.out{opacity:.35}.lane.out .nm{text-decoration:line-through}.lane.out .rn{display:none}
+.stl{z-index:2;position:absolute;left:92px;top:0;bottom:0;width:2px;background:var(--line)}
+.fline{z-index:2;position:absolute;right:22px;top:0;bottom:0;width:12px;background:conic-gradient(var(--ink) 25%,#fff 0 50%,var(--ink) 0 75%,#fff 0) 0 0/12px 12px;opacity:.85}
+.count{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--num);font-weight:700;font-size:160px;color:var(--mint);z-index:5;background:rgba(255,255,255,.55);pointer-events:none}
+.podium{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:16px;display:flex;flex-direction:column;gap:8px;min-height:0}
+.podium .list{overflow:auto;display:flex;flex-direction:column;gap:6px;flex:1;min-height:0}
+.pl{display:flex;align-items:center;gap:12px;padding:8px 10px;border-radius:12px;background:var(--soft);font-weight:700;font-size:15px}
+.pl i{font-style:normal;font-family:var(--num);width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:13px;background:#fff;flex:none}
+.pl:nth-child(1) i{background:var(--lemon)}.pl:nth-child(2) i{background:#e3e6ea}.pl:nth-child(3) i{background:#ffd3c6}
+.pl.wait{background:transparent;border:1.5px dashed var(--line);color:var(--muted);font-weight:500}
+.go{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+
+/* 기록 탭 */
+.rec{display:flex;flex-direction:column;gap:14px;height:100%}
+.stats{display:flex;gap:10px;flex-wrap:wrap}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 16px;min-width:110px}
+.stat b{display:block;font-family:var(--num);font-size:26px;margin-top:2px}
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto;align-items:center}
+.tablebox{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:auto;flex:1;min-height:200px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+td.nm{white-space:nowrap}
+th{position:sticky;top:0;background:#faf9f5;text-align:left;font-size:12px;color:var(--muted);font-weight:700;padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap;z-index:1}
+td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+tr.click{cursor:pointer}tr.click:hover td{background:#fbfaf7}
+td.num{font-family:var(--num);white-space:nowrap}
+td .clip{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;color:#4c5463;font-size:13px;line-height:1.6;max-width:360px}
+
+/* 모달 */
+.modal{position:fixed;inset:0;background:rgba(29,36,51,.35);display:grid;place-items:center;z-index:50;padding:16px}
+.sheet{background:var(--bg);border-radius:24px;width:min(760px,100%);max-height:calc(100vh - 32px);overflow:auto;padding:24px 26px;box-shadow:0 40px 80px -30px rgba(29,36,51,.5)}
+.sheet h3{font-size:22px;font-weight:800;letter-spacing:-.02em;display:flex;justify-content:space-between;align-items:center}
+.sheet h3 button{border:0;background:var(--soft);width:34px;height:34px;border-radius:50%;font-size:14px}
+.sec{margin-top:18px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px 18px}
+.sec h5{font-size:15px;font-weight:700;margin-bottom:10px}
+.sec p.help{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:10px}
+.fld{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--muted);font-weight:600}
+.fld input,.fld textarea,.fld select{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:#fff;color:var(--ink);font-weight:500;font-size:14.5px;outline:none}
+.fld input:focus,.fld textarea:focus{border-color:var(--mint)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px}
+.rowbtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;align-items:center}
+.clist{display:flex;flex-direction:column;gap:6px}
+.citem{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:var(--soft);font-weight:600}
+.citem.on{background:var(--mint-lt)}
+.citem small{color:var(--muted);font-weight:500}
+.citem .sp{flex:1}
+.pbox{border:1px solid var(--line);border-radius:14px;margin-top:12px;overflow:hidden}
+.pbox header{display:flex;justify-content:space-between;align-items:center;background:var(--coral-lt);padding:8px 12px;font-weight:700;font-size:13.5px}
+.pbox pre{white-space:pre-wrap;font-family:var(--sans);font-size:12.5px;line-height:1.6;padding:12px;max-height:200px;overflow:auto;background:#fff;color:#3d4250}
+.warn{background:var(--lemon-lt);border-radius:12px;padding:10px 12px;font-size:12.5px;line-height:1.6;color:#5c4a0c}
+.map{font-size:12.5px;color:var(--muted);line-height:1.8;margin-top:8px}
+
+.toast{max-width:calc(100vw - 32px);text-align:center;position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 20px;border-radius:999px;font-weight:600;font-size:14px;z-index:60;box-shadow:0 12px 30px -10px rgba(0,0,0,.4);transition:opacity .3s}
+
+/* 시작 화면 */
+.welcome{max-width:760px;margin:20px auto;display:grid;grid-template-columns:1fr 240px;gap:24px;align-items:center;background:linear-gradient(160deg,#e3f7ef,#eef7ff 70%,#f6f1ff);border-radius:28px;padding:36px}
+.welcome h1{font-size:30px;font-weight:800;letter-spacing:-.03em;line-height:1.3}
+.welcome p{color:#4c5463;line-height:1.7;margin:10px 0 18px}
+
+#printArea{display:none}
+@media print{
+  body>*:not(#printArea){display:none!important}
+  #printArea{display:block;padding:10mm;font-family:var(--sans)}
+  #printArea h1{font-size:20pt;margin-bottom:4mm}
+  #printArea p{color:#555;margin-bottom:6mm}
+  #printArea table{font-size:11pt}
+  #printArea td,#printArea th{border:1px solid #bbb;padding:2.2mm 3mm;position:static;background:#fff;color:#000}
+}
+
+@media (max-width:980px){
+  .top{padding:12px 16px;gap:10px}
+  .tabs{margin-left:0;order:5;width:100%;justify-content:space-between}
+  .tabs button{padding:9px 10px;font-size:13.5px}
+  .page{padding:4px 16px 20px}
+  .present{grid-template-columns:1fr;height:auto}
+  .frame{min-height:220px;flex:none;height:240px}
+  .notes{grid-template-columns:1fr}
+  .board{grid-template-columns:1fr}
+  .track{min-height:420px}
+  .welcome{grid-template-columns:1fr;padding:24px}
+  .welcome svg{display:none}
+  .grid2,.grid3{grid-template-columns:1fr}
+  .clock{font-size:72px}
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<defs>
+  <symbol id="logo" viewBox="0 0 36 36">
+    <path d="M6 4h24a4 4 0 0 1 4 4v15a4 4 0 0 1-4 4H15l-7 6v-6H6a4 4 0 0 1-4-4V8a4 4 0 0 1 4-4z" fill="#22b386"/>
+    <rect x="14" y="8" width="8" height="11" rx="4" fill="#ffd24a"/>
+    <path d="M11 15.5a7 7 0 0 0 14 0M18 22.5v1.5" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="podium" viewBox="0 0 340 300">
+    <ellipse cx="170" cy="282" rx="130" ry="12" fill="#1d2433" opacity=".07"/>
+    <path d="M105 150h130l-14 130H119z" fill="#22b386"/>
+    <path d="M105 150h130l-3 26H108z" fill="#16916b"/>
+    <rect x="92" y="136" width="156" height="20" rx="8" fill="#ffd24a"/>
+    <circle cx="170" cy="215" r="20" fill="#fff" opacity=".9"/>
+    <path d="M161 215l6 6 12-13" stroke="#22b386" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M182 136 C186 110 196 96 206 86" stroke="#1d2433" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <rect x="196" y="58" width="22" height="36" rx="11" transform="rotate(30 207 76)" fill="#1d2433"/>
+    <path d="M200 66l14 8M197 72l14 8" stroke="#5c6476" stroke-width="2"/>
+    <g transform="translate(232 18)"><path d="M0 12a12 12 0 0 1 12-12h62a12 12 0 0 1 12 12v26a12 12 0 0 1-12 12H30l-14 12V50h-4A12 12 0 0 1 0 38z" fill="#fff" stroke="#1d2433" stroke-width="2.5"/><circle cx="28" cy="25" r="4" fill="#ff7357"/><circle cx="43" cy="25" r="4" fill="#ffd24a"/><circle cx="58" cy="25" r="4" fill="#5fb2ff"/></g>
+    <g transform="translate(36 60)"><path d="M0 10a10 10 0 0 1 10-10h50a10 10 0 0 1 10 10v20a10 10 0 0 1-10 10h-6v10l-12-10H10A10 10 0 0 1 0 30z" fill="#a993ff"/><path d="M16 20h38" stroke="#fff" stroke-width="4" stroke-linecap="round"/></g>
+    <path d="M300 110l4 10 10 4-10 4-4 10-4-10-10-4 10-4z" fill="#ffd24a"/>
+    <path d="M30 150l3 7 7 3-7 3-3 7-3-7-7-3 7-3z" fill="#ff7357"/>
+    <circle cx="282" cy="168" r="5" fill="#5fb2ff"/><circle cx="58" cy="200" r="4" fill="#22b386"/>
+  </symbol>
+</defs>
+</svg>
+
+<header class="top">
+  <div class="brand"><svg width="34" height="34"><use href="#logo"/></svg>발표 무대</div>
+  <nav class="tabs" id="tabs">
+    <button data-tab="order"><i>01</i>순서 정하기</button>
+    <button data-tab="present"><i>02</i>발표</button>
+    <button data-tab="records"><i>03</i>기록 정리</button>
+  </nav>
+  <div class="sp"></div>
+  <label class="clsSel" title="반 선택"><select id="clsSelect" aria-label="반 선택"></select></label>
+  <button class="pillbtn" id="tvBtn" title="TV(두 번째 화면)에 띄울 창을 엽니다">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="1.5" y="2.5" width="13" height="9" rx="1.5"/><path d="M5 14h6"/></svg><span>TV 화면 열기</span></button>
+  <button class="iconbtn" id="setBtn" title="설정 (반 명단·발표 시간·백업)" aria-label="설정">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+  </button>
+</header>
+
+<main>
+  <!-- 시작 화면 -->
+  <section class="page hidden" id="pg-welcome">
+    <div class="welcome">
+      <div>
+        <div class="eyebrow" style="color:var(--mint-dk)">Welcome</div>
+        <h1>반 명단만 넣으면<br>발표 수업 준비 끝.</h1>
+        <p>순서 정하기, 발표 시간 재기, TV 화면, 발표 기록, 세특 프롬프트까지 한 화면에서 해요. 모든 기록은 이 컴퓨터 브라우저에만 저장돼요.</p>
+        <div class="rowbtns">
+          <button class="btn mint" id="wAdd">반 명단 넣기</button>
+          <button class="btn white" id="wDemo">예시 반으로 둘러보기</button>
+        </div>
+      </div>
+      <svg viewBox="0 0 340 300" width="240" height="212"><use href="#podium"/></svg>
+    </div>
+  </section>
+
+  <!-- 01 순서 -->
+  <section class="page hidden" id="pg-order">
+    <div class="race">
+      <div class="rh">
+        <div><div class="eyebrow" id="raceSub">Running order</div><h1>결승선을 먼저 지나면 <em>먼저 발표!</em></h1></div>
+        <div class="seg" id="raceMode"><button data-m="race" class="on">🏃 레이스</button><button data-m="shuffle">🎲 바로 섞기</button><button data-m="number">번호순</button></div>
+      </div>
+      <div class="board">
+        <div class="track" id="track"></div>
+        <div class="podium">
+          <div class="eyebrow">Finish</div>
+          <div class="list" id="podList"></div>
+        </div>
+      </div>
+      <div class="go">
+        <button class="btn mint" id="raceGo">▶ 출발!</button>
+        <button class="btn white hidden" id="raceToPresent">이 순서로 발표 시작 →</button>
+        <span style="color:var(--muted);font-size:13.5px" id="raceNote">오늘 빠진 학생은 이름을 눌러 빼세요.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 발표 -->
+  <section class="page hidden" id="pg-present">
+    <div class="present">
+      <div class="col">
+        <div class="frame" id="frame"></div>
+        <div class="cap">
+          <div style="display:flex;align-items:center;gap:6px;min-width:0;max-width:100%;flex-wrap:wrap" id="fileCap"></div>
+          <div class="pg" id="pager"></div>
+        </div>
+        <div class="notes">
+          <div class="box">
+            <div class="bh"><h4>발표 내용</h4><button class="mic" id="micBtn" title="발표 시작과 함께 말소리를 글자로 받아 적어요"><span class="wave"><i></i><i></i><i></i><i></i></span><span id="micTxt">음성 기록 켜짐</span></button></div>
+            <textarea id="trans" placeholder="발표를 시작하면 말하는 내용이 여기에 적혀요. 직접 고치거나 적어도 돼요."></textarea>
+            <div class="meta" id="transMeta"></div>
+          </div>
+          <div class="box">
+            <div class="bh"><h4>관찰 메모</h4><span class="tag">세특 근거</span></div>
+            <div class="memo"><textarea id="memo" placeholder="눈에 띈 점을 한 줄로. 예) 질문에 그래프를 다시 짚으며 차분히 답함"></textarea></div>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="now" id="now">
+          <svg class="illo" viewBox="0 0 340 300"><use href="#podium"/></svg>
+          <div class="eyebrow" id="nowLbl">Ready</div>
+          <h2 id="nowName">—</h2>
+          <input class="topic" id="topic" placeholder="발표 주제 (눌러서 입력)">
+          <div class="clock" id="clock">0:00<small>누적</small></div>
+          <div class="mwrap"><div class="meter" id="meter"><i></i><span class="zmin"></span><span class="zmax"></span></div></div>
+          <div class="ticks" id="ticks"></div>
+          <div class="status" id="status">● 시작을 누르면 시간이 쌓여요</div>
+          <div class="acts"><button class="btn white" id="startBtn">▶ 시작</button><button class="btn coral" id="finBtn">■ 발표 마침</button></div>
+          <div class="sub"><button class="link" id="prevBtn">← 이전 학생</button><button class="link" id="skipBtn">건너뛰기</button><button class="link" id="nextBtn">다음 학생 →</button></div>
+        </div>
+        <div class="box queue">
+          <div class="bh"><span class="eyebrow">Running order</span><span class="eyebrow" id="qCount"></span></div>
+          <div class="list" id="qList"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 03 기록 -->
+  <section class="page hidden" id="pg-records">
+    <div class="rec">
+      <div class="rh">
+        <div><div class="eyebrow" id="recSub"></div><h1 id="recTitle">발표 기록</h1></div>
+        <div class="tools">
+          <button class="btn sm white" id="printBtn">🖨 순서표 인쇄</button>
+          <button class="btn sm white" id="xlsBtn">⬇ 엑셀 저장</button>
+          <button class="btn sm ink" id="promptBtn">✨ 세특 프롬프트</button>
+        </div>
+      </div>
+      <div class="stats" id="stats"></div>
+      <div class="tablebox"><table><thead><tr><th>순서</th><th>번호</th><th>이름</th><th>발표 주제</th><th>시간</th><th>판정</th><th>자료</th><th>발표 내용</th><th>관찰 메모</th></tr></thead><tbody id="recBody"></tbody></table></div>
+    </div>
+  </section>
+</main>
+
+<div id="printArea"></div>
+<input type="file" id="fMat" multiple accept=".pdf,image/*" class="hidden">
+<input type="file" id="fOne" accept=".pdf,image/*" class="hidden">
+<input type="file" id="fXls" accept=".xlsx,.xls,.csv" class="hidden">
+<input type="file" id="fBak" accept=".json,application/json" class="hidden">
+
+<script>
+'use strict';
+/* ───────── 기본 도구 ───────── */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Math.random().toString(36).slice(2,9)+Date.now().toString(36).slice(-4);
+const fmt=sec=>{sec=Math.max(0,Math.floor(sec));return Math.floor(sec/60)+':'+String(sec%60).padStart(2,'0')};
+const pad2=n=>String(n).padStart(2,'0');
+const today=()=>{const d=new Date();return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`};
+const AV=[['var(--mint-lt)','var(--mint-dk)'],['var(--sky-lt)','#2f86d6'],['var(--coral-lt)','#d9553a'],['var(--lilac-lt)','#7a5ff0'],['var(--lemon-lt)','#a77c00']];
+const COLS=['#22b386','#5fb2ff','#ff7357','#a993ff','#ffc21a'];
+let toastT;
+function toast(msg){let t=$('#toast');if(!t){t=document.createElement('div');t.id='toast';t.className='toast';document.body.appendChild(t)}
+  t.textContent=msg;t.style.opacity=1;clearTimeout(toastT);toastT=setTimeout(()=>t.style.opacity=0,2600)}
+
+/* ───────── 저장 (브라우저 localStorage) ───────── */
+const KEY='balpyo-stage-v1';
+let S;
+function load(){try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){S=null}
+  if(!S||!Array.isArray(S.classes))S={v:1,classes:[],classId:null,tab:'order',settings:{subject:'',chars:500,group:5,anon:true}};
+  S.settings=Object.assign({subject:'',chars:500,group:5,anon:true},S.settings||{})}
+let saveT;
+function save(){clearTimeout(saveT);saveT=setTimeout(saveNow,250)}
+function saveNow(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){toast('저장 공간이 부족해요. 백업 후 옛 기록을 지워 주세요.')}}
+window.addEventListener('beforeunload',()=>{if(T.running)pauseTimer();saveNow()});
+
+const cls=()=>S.classes.find(c=>c.id===S.classId)||null;
+const act=()=>{const c=cls();return c?c.activities.find(a=>a.id===c.actId)||c.activities[0]:null};
+const stu=id=>{const c=cls();return c?c.students.find(s=>s.id===id):null};
+function newActivity(title){return{id:uid(),title:title||'발표 수업',date:today(),minSec:120,maxSec:180,order:[],absent:[],cur:0,recs:{}}}
+function rec(sid){const a=act();if(!a.recs[sid])a.recs[sid]={topic:'',acc:0,runAt:0,transcript:'',memo:'',done:false,skipped:false};return a.recs[sid]}
+function elapsed(r){return r.acc+(r.runAt?(Date.now()-r.runAt)/1000:0)}
+function judge(sec,a){if(!sec)return null;if(sec<a.minSec)return'short';if(sec>a.maxSec)return'over';return'ok'}
+const JUDGE={ok:['적정','p-ok'],short:['짧음','p-short'],over:['초과','p-over']};
+
+/* 발표 순서: 정해 둔 순서(결석 제외), 없으면 번호순 */
+function queue(){const c=cls(),a=act();if(!c||!a)return[];
+  const ab=new Set(a.absent);let ids=a.order.filter(id=>c.students.some(s=>s.id===id));
+  const rest=c.students.filter(s=>!ids.includes(s.id)).sort((x,y)=>x.no-y.no).map(s=>s.id);
+  return ids.concat(rest).filter(id=>!ab.has(id))}
+
+/* ───────── IndexedDB: 발표 자료 파일 ───────── */
+const DB={db:null,
+  open(){return this.db?Promise.resolve(this.db):new Promise((ok,no)=>{const r=indexedDB.open('balpyo-stage',1);
+    r.onupgradeneeded=()=>r.result.createObjectStore('files');r.onsuccess=()=>{this.db=r.result;ok(this.db)};r.onerror=()=>no(r.error)})},
+  async op(mode,fn){const db=await this.open();return new Promise((ok,no)=>{const tx=db.transaction('files',mode);const st=tx.objectStore('files');const q=fn(st);tx.oncomplete=()=>ok(q&&q.result);tx.onerror=()=>no(tx.error)})},
+  put(k,v){return this.op('readwrite',s=>s.put(v,k))},get(k){return this.op('readonly',s=>s.get(k))},del(k){return this.op('readwrite',s=>s.delete(k))},
+  keys(){return this.op('readonly',s=>s.getAllKeys())}};
+const fkey=(sid)=>act().id+':'+sid;
+
+/* ───────── 화면 전환 ───────── */
+function setTab(t){S.tab=t;save();render()}
+$('#tabs').addEventListener('click',e=>{const b=e.target.closest('button');if(b)setTab(b.dataset.tab)});
+function render(){
+  const c=cls();
+  $('#clsSelect').innerHTML=S.classes.length?S.classes.map(x=>`<option value="${x.id}" ${x.id===S.classId?'selected':''}>${esc(x.name)} · ${x.students.length}명</option>`).join('')+'<option value="__new">+ 새 반 추가</option>':'<option>반 없음</option>';
+  document.querySelectorAll('.page').forEach(p=>p.classList.add('hidden'));
+  document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===S.tab));
+  $('#tabs').classList.toggle('hidden',!c);
+  if(!c){$('#pg-welcome').classList.remove('hidden');return}
+  $('#pg-'+S.tab).classList.remove('hidden');
+  if(S.tab==='order')renderOrder();
+  if(S.tab==='present')renderPresent();
+  if(S.tab==='records')renderRecords();
+  tvSync();
+}
+$('#clsSelect').addEventListener('change',e=>{if(e.target.value==='__new'){openSettings(true);render();return}
+  if(T.running)pauseTimer();S.classId=e.target.value;race.reset();matCache.clear();save();render()});
+
+/* ───────── 01 순서 정하기 (레이스) ───────── */
+const race={mode:'race',running:false,pos:{},vel:{},finish:[],raf:0,
+  reset(){cancelAnimationFrame(this.raf);this.running=false;this.pos={};this.finish=[]}};
+$('#raceMode').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||race.running)return;race.mode=b.dataset.m;
+  document.querySelectorAll('#raceMode button').forEach(x=>x.classList.toggle('on',x===b));
+  $('#raceGo').textContent=race.mode==='race'?'▶ 출발!':race.mode==='shuffle'?'🎲 섞기':'번호순으로 정하기'});
+function renderOrder(){
+  const c=cls(),a=act(),ab=new Set(a.absent);
+  const n=c.students.length-a.absent.length;
+  $('#raceSub').textContent=`Running order · ${esc(a.title)} · 오늘 ${n}명`;
+  const tr=$('#track');
+  tr.innerHTML='<div class="stl"></div><div class="fline"></div>'+c.students.slice().sort((x,y)=>x.no-y.no).map((s,i)=>{
+    const p=race.pos[s.id]??(a.order.length&&!race.running&&!race.finish.length?1:0);
+    return `<div class="lane ${ab.has(s.id)?'out':''}" data-id="${s.id}" style="--c:${COLS[i%5]}"><button class="nm" title="눌러서 결석 표시">${esc(s.name)}</button><span class="rn" style="left:calc(92px + (100% - 150px) * ${p})"><i></i></span></div>`}).join('');
+  renderPodium();
+  $('#raceToPresent').classList.toggle('hidden',!a.order.length||race.running);
+  $('#raceNote').textContent=a.absent.length?`결석 ${a.absent.length}명: ${a.absent.map(id=>stu(id)?.name).filter(Boolean).join(', ')} · 이름을 다시 누르면 출석`:'오늘 빠진 학생은 이름을 눌러 빼세요.';
+}
+function renderPodium(){
+  const a=act(),list=race.running||race.finish.length?race.finish:a.order.filter(id=>!a.absent.includes(id));
+  const total=cls().students.length-a.absent.length;
+  let h=list.map((id,i)=>`<div class="pl"><i>${i+1}</i>${esc(stu(id)?.name||'')}</div>`).join('');
+  if(list.length<total)h+=`<div class="pl wait"><i>${list.length+1}</i>${race.running?'달리는 중…':list.length?'':'출발을 누르세요'}</div>`;
+  $('#podList').innerHTML=h;
+  const pl=$('#podList');pl.scrollTop=race.running?pl.scrollHeight:0;
+}
+$('#track').addEventListener('click',e=>{const b=e.target.closest('.nm');if(!b||race.running)return;
+  const id=b.parentElement.dataset.id,a=act(),i=a.absent.indexOf(id);
+  if(i>=0)a.absent.splice(i,1);else a.absent.push(id);save();renderOrder();tvSync()});
+$('#raceGo').addEventListener('click',()=>{
+  if(race.running)return;const a=act(),c=cls();
+  const ids=c.students.map(s=>s.id).filter(id=>!a.absent.includes(id));
+  if(!ids.length)return toast('출석한 학생이 없어요.');
+  if(Object.values(a.recs).some(r=>r.done)&&!confirm('이미 발표한 학생이 있어요. 순서를 새로 정할까요? (발표 기록은 그대로 남아요)'))return;
+  if(race.mode==='number'){a.order=c.students.slice().sort((x,y)=>x.no-y.no).map(s=>s.id).filter(id=>ids.includes(id));a.cur=0;race.reset();save();renderOrder();tvSync();return toast('번호순으로 정했어요.')}
+  if(race.mode==='shuffle'){const o=ids.slice();for(let i=o.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[o[i],o[j]]=[o[j],o[i]]}
+    a.order=o;a.cur=0;race.reset();race.finish=o.slice();ids.forEach(id=>race.pos[id]=1);save();renderOrder();tvSync();return toast('순서를 섞었어요.')}
+  race.reset();race.running=true;ids.forEach(id=>{race.pos[id]=0;race.vel[id]=0});renderOrder();tvSync();
+  const cnt=document.createElement('div');cnt.className='count';$('#track').appendChild(cnt);
+  let k=3;const tick=()=>{if(k===0){cnt.remove();run();return}cnt.textContent=k--;setTimeout(tick,700)};tick();
+  function run(){let last=performance.now(),acc=0;
+    const lanes={};document.querySelectorAll('#track .lane').forEach(l=>lanes[l.dataset.id]=l);
+    const step=t=>{const dt=Math.min(.05,(t-last)/1000);last=t;acc+=dt;
+      if(acc>.45){acc=0;ids.forEach(id=>{race.vel[id]=.07+Math.random()*.13})}
+      ids.forEach(id=>{if(race.pos[id]>=1)return;race.pos[id]=Math.min(1,race.pos[id]+race.vel[id]*dt);
+        const l=lanes[id];l.classList.add('moving');l.querySelector('.rn').style.left=`calc(92px + (100% - 150px) * ${race.pos[id]})`;
+        if(race.pos[id]>=1){race.finish.push(id);l.classList.remove('moving');l.querySelector('.rn').insertAdjacentHTML('beforeend',`<em>${race.finish.length}</em>`);renderPodium();tvSync()}});
+      if(race.finish.length<ids.length)race.raf=requestAnimationFrame(step);
+      else{race.running=false;a.order=race.finish.slice();a.cur=0;save();renderOrder();
+        document.querySelectorAll('#track .lane').forEach(l=>{const i=race.finish.indexOf(l.dataset.id);if(i>=0)l.querySelector('.rn').insertAdjacentHTML('beforeend',`<em>${i+1}</em>`)});
+        tvSync();toast('발표 순서가 정해졌어요!')}};
+    race.raf=requestAnimationFrame(step)}
+});
+$('#raceToPresent').addEventListener('click',()=>setTab('present'));
+
+/* ───────── 02 발표: 타이머 ───────── */
+const T={running:false,sid:null,iv:0};
+function curId(){const q=queue(),a=act();if(!q.length)return null;a.cur=Math.max(0,Math.min(a.cur,q.length-1));return q[a.cur]}
+function startTimer(){const id=curId();if(!id)return;const r=rec(id);if(r.runAt)return;r.runAt=Date.now();r.skipped=false;T.running=true;T.sid=id;
+  clearInterval(T.iv);T.iv=setInterval(updateClock,250);if(speech.want)speech.start();save();renderPresent();tvSync()}
+function pauseTimer(){const id=T.sid||curId();if(!id)return;const r=rec(id);if(r.runAt){r.acc=elapsed(r);r.runAt=0}T.running=false;clearInterval(T.iv);speech.stop();save()}
+function finish(){const id=curId();if(!id)return;const r=rec(id);pauseTimer();
+  if(r.acc<1&&!confirm('아직 시간을 재지 않았어요. 그래도 발표 마침으로 할까요?'))return;
+  r.done=true;r.skipped=false;r.transcript=$('#trans').value;r.memo=$('#memo').value;
+  const j=judge(r.acc,act());toast(`${stu(id).name} 발표 ${fmt(r.acc)} 기록${j?' · '+JUDGE[j][0]:''}`);
+  move(1)}
+function move(d){if(T.running)pauseTimer();const q=queue(),a=act();a.cur=Math.max(0,Math.min(q.length-1,a.cur+d));mat.page=1;save();renderPresent();tvSync()}
+function updateClock(){const id=curId();if(!id)return;const r=rec(id),a=act(),sec=elapsed(r);
+  const st=sec<a.minSec?'wait':sec<=a.maxSec-15?'ok':sec<=a.maxSec?'near':'over';
+  const color={wait:'var(--ink)',ok:'var(--mint-dk)',near:'var(--near)',over:'var(--over)'}[st];
+  const cl=$('#clock');cl.firstChild.nodeValue=fmt(sec);cl.style.color=r.acc||r.runAt?color:'var(--ink)';
+  const span=a.maxSec*1.2;const bar=$('#meter i');bar.style.width=Math.min(100,sec/span*100)+'%';
+  bar.style.background={wait:'#c9ced6',ok:'var(--ok)',near:'var(--near)',over:'var(--over)'}[st];
+  const s=$('#status');
+  if(!r.acc&&!r.runAt){s.textContent='● 시작을 누르면 시간이 쌓여요';s.style.color='var(--muted)'}
+  else{const m={wait:`● 최소 시간까지 ${Math.ceil(a.minSec-sec)}초`,ok:`● 딱 좋아요 · 최대까지 ${Math.ceil(a.maxSec-sec)}초`,near:`● 곧 끝낼 시간 · ${Math.ceil(a.maxSec-sec)}초 남음`,over:`● 최대 시간을 ${Math.floor(sec-a.maxSec)}초 넘었어요`}[st];
+    s.textContent=(r.runAt?'':'❙❙ 멈춤 · ')+m;s.style.color=r.runAt?color:'var(--muted)'}
+  const rowT=document.querySelector(`#qList .r.cur .t`);if(rowT&&r.runAt)rowT.textContent=fmt(sec)}
+
+function renderPresent(){
+  const a=act(),q=queue(),id=curId();
+  // 오른쪽 카드
+  const r=id?rec(id):null,s=id?stu(id):null;
+  $('#now').classList.toggle('running',!!(r&&r.runAt));
+  $('#nowLbl').textContent=!id?'No students':r.runAt?'Now speaking':r.done?'Finished':'Up now';
+  $('#nowName').innerHTML=s?`${esc(s.name)}<span>No.${pad2(s.no)}</span>`:'—';
+  $('#topic').value=r?r.topic:'';$('#topic').disabled=!r;
+  const span=a.maxSec*1.2;
+  $('#meter .zmin').style.left=(a.minSec/span*100)+'%';$('#meter .zmax').style.left=(a.maxSec/span*100)+'%';
+  $('#ticks').innerHTML=`<span style="left:0">0:00</span><span style="left:${a.minSec/span*100}%"><b>${fmt(a.minSec)}</b> 최소</span><span style="left:${a.maxSec/span*100}%"><b>${fmt(a.maxSec)}</b> 최대</span>`;
+  $('#startBtn').innerHTML=r&&r.runAt?'❙❙ 멈춤':r&&r.acc?'▶ 이어서':'▶ 시작';
+  ['#startBtn','#finBtn','#skipBtn'].forEach(k=>$(k).disabled=!id);
+  $('#prevBtn').disabled=!id||a.cur<=0;$('#nextBtn').disabled=!id||a.cur>=q.length-1;
+  updateClock();if(!id){$('#clock').firstChild.nodeValue='0:00'}
+  // 메모
+  $('#trans').value=r?r.transcript:'';$('#memo').value=r?r.memo:'';$('#trans').disabled=$('#memo').disabled=!r;
+  transMeta();
+  // 순서 목록
+  const done=q.filter(x=>a.recs[x]?.done).length;
+  $('#qCount').textContent=`${done} / ${q.length} 완료`;
+  getMatKeys().then(keys=>{
+    $('#qList').innerHTML=q.map((x,i)=>{const st=stu(x),rr=a.recs[x],j=rr?.done?judge(rr.acc,a):null,av=AV[i%5];
+      const t=rr?.done?`${fmt(rr.acc)} <span class="pill ${JUDGE[j]?.[1]||'p-none'}">${JUDGE[j]?.[0]||'기록'}</span>`:rr?.skipped?'<span class="pill p-none">건너뜀</span>':i===a.cur?'<span class="pill p-ok">지금</span>':rr?.acc?fmt(rr.acc):'대기';
+      return `<button class="r ${i===a.cur?'cur':''}" data-i="${i}"><span class="av" style="background:${av[0]};color:${av[1]}">${esc(st.name[0]||'')}</span><span class="nm">${esc(st.name)} <small>${i+1}</small>${keys.has(fkey(x))?'<span class="doc" title="자료 있음"></span>':''}</span><span class="t">${t}</span></button>`}).join('')||'<div class="empty"><p>출석한 학생이 없어요.</p></div>';
+    const c=$('#qList .r.cur'),L=$('#qList');if(c&&(c.offsetTop<L.scrollTop||c.offsetTop>L.scrollTop+L.clientHeight-50))L.scrollTop=c.offsetTop-60});
+  showMaterial();
+}
+$('#qList').addEventListener('click',e=>{const b=e.target.closest('.r');if(!b)return;if(T.running)pauseTimer();act().cur=+b.dataset.i;mat.page=1;save();renderPresent();tvSync()});
+$('#startBtn').addEventListener('click',()=>{const id=curId();if(!id)return;if(rec(id).runAt){pauseTimer();renderPresent();tvSync()}else startTimer()});
+$('#finBtn').addEventListener('click',finish);
+$('#prevBtn').addEventListener('click',()=>move(-1));
+$('#nextBtn').addEventListener('click',()=>move(1));
+$('#skipBtn').addEventListener('click',()=>{const id=curId();if(!id)return;if(T.running)pauseTimer();const r=rec(id);if(!r.done)r.skipped=true;move(1)});
+$('#topic').addEventListener('input',e=>{const id=curId();if(id){rec(id).topic=e.target.value;save();tvSync()}});
+$('#trans').addEventListener('input',e=>{const id=curId();if(id){rec(id).transcript=e.target.value;speech.base=e.target.value;save();transMeta()}});
+$('#memo').addEventListener('input',e=>{const id=curId();if(id){rec(id).memo=e.target.value;save()}});
+function transMeta(){const n=$('#trans').value.replace(/\s/g,'').length;
+  $('#transMeta').textContent=!speech.ok?'이 브라우저는 음성 인식을 지원하지 않아요 (Chrome·Edge 권장). 직접 적거나 메모만 써도 돼요.':`${n}자 기록됨 · 마이크가 없으면 메모만 써도 돼요`}
+
+/* 키보드: 스페이스 시작/멈춤, ←→ 자료 넘김 */
+document.addEventListener('keydown',e=>{if(S.tab!=='present'||!cls()||/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)||$('.modal'))return;
+  if(e.code==='Space'){e.preventDefault();$('#startBtn').click()}
+  if(e.key==='ArrowRight'||e.key==='PageDown'){e.preventDefault();turn(1)}
+  if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();turn(-1)}});
+
+/* ───────── 음성 인식 (Chrome·Edge) ───────── */
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+const speech={ok:!!SR,want:true,on:false,rec:null,base:'',sid:null,
+  start(){if(!this.ok||this.on)return;const id=curId();if(!id)return;this.sid=id;this.base=rec(id).transcript;
+    const r=new SR();r.lang='ko-KR';r.continuous=true;r.interimResults=true;this.rec=r;this.on=true;
+    r.onresult=e=>{let fin='',tmp='';for(let i=e.resultIndex;i<e.results.length;i++){const t=e.results[i][0].transcript;if(e.results[i].isFinal)fin+=t;else tmp+=t}
+      if(fin){this.base=(this.base?this.base.replace(/\s+$/,'')+' ':'')+fin.trim();const rr=rec(this.sid);rr.transcript=this.base;save()}
+      if(curId()===this.sid){$('#trans').value=this.base+(tmp?' '+tmp:'');$('#trans').scrollTop=1e6;transMeta()}};
+    r.onerror=e=>{if(e.error==='not-allowed'||e.error==='service-not-allowed'){this.want=false;this.on=false;micUI();toast('마이크를 쓸 수 없어요. 주소창의 마이크 권한을 확인해 주세요.')}
+      else if(e.error==='network'){toast('음성 인식은 인터넷 연결이 필요해요.')}};
+    r.onend=()=>{if(this.on&&T.running){try{r.start()}catch(e){}}else this.on=false};
+    try{r.start()}catch(e){this.on=false}micUI()},
+  stop(){this.on=false;if(this.rec){try{this.rec.stop()}catch(e){}}micUI()}};
+function micUI(){const b=$('#micBtn');b.classList.toggle('on',speech.on);
+  $('#micTxt').textContent=!speech.ok?'음성 인식 없음':speech.on?'듣는 중':speech.want?'음성 기록 켜짐':'음성 기록 꺼짐';b.disabled=!speech.ok}
+$('#micBtn').addEventListener('click',()=>{speech.want=!speech.want;if(!speech.want)speech.stop();else if(T.running)speech.start();micUI()});
+
+/* ───────── 발표 자료 (PDF·그림) ───────── */
+const mat={page:1,pages:0,kind:null};
+const matCache=new Map();
+let pdfReady=false;
+if(window.pdfjsLib){pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';pdfReady=true}
+async function getMatKeys(){try{return new Set(await DB.keys())}catch(e){return new Set()}}
+async function loadMat(sid){const k=fkey(sid);if(matCache.has(k))return matCache.get(k);
+  let f;try{f=await DB.get(k)}catch(e){return null}if(!f)return null;
+  let m={name:f.name,type:f.type};
+  if(/pdf/i.test(f.type)||/\.pdf$/i.test(f.name)){if(!pdfReady)m.kind='nopdf';else{m.kind='pdf';m.doc=await pdfjsLib.getDocument({data:await f.blob.arrayBuffer()}).promise;m.pages=m.doc.numPages}}
+  else{m.kind='img';m.url=URL.createObjectURL(f.blob);m.pages=1}
+  matCache.set(k,m);return m}
+async function drawPage(m,canvas,boxW,boxH){const p=await m.doc.getPage(mat.page);const v1=p.getViewport({scale:1});
+  const sc=Math.min(boxW/v1.width,boxH/v1.height),dpr=(canvas.ownerDocument.defaultView.devicePixelRatio||1);
+  const v=p.getViewport({scale:sc*dpr});canvas.width=v.width;canvas.height=v.height;canvas.style.width=v.width/dpr+'px';canvas.style.height=v.height/dpr+'px';
+  // PDF 글꼴은 이 창에 등록되므로 TV 창 캔버스는 여기서 그린 뒤 복사한다
+  const off=canvas.ownerDocument===document?canvas:document.createElement('canvas');off.width=v.width;off.height=v.height;
+  await p.render({canvasContext:off.getContext('2d'),viewport:v}).promise;
+  if(off!==canvas)canvas.getContext('2d').drawImage(off,0,0)}
+let showSeq=0;
+async function showMaterial(){const seq=++showSeq,id=curId(),fr=$('#frame');
+  if(!id){fr.innerHTML='';$('#fileCap').innerHTML='';$('#pager').innerHTML='';return}
+  const m=await loadMat(id);if(seq!==showSeq)return;
+  mat.kind=m?m.kind:null;mat.pages=m?m.pages||1:0;mat.page=Math.min(mat.page,mat.pages||1);
+  if(!m){fr.innerHTML=`<div class="empty"><svg viewBox="0 0 340 300" width="150" height="132"><use href="#podium"/></svg><b>발표 자료가 없어요</b><p>자료 없이 발표해도 괜찮아요. TV에는 "친구의 이야기에 귀 기울여 주세요"가 떠요.<br>PDF나 그림 파일을 여기로 끌어다 놓아도 돼요.</p><div class="row"><button class="btn sm white" data-act="one">이 학생 자료 넣기</button><button class="btn sm ghost" data-act="many">여러 명 한꺼번에</button></div></div>`;
+    $('#fileCap').innerHTML=`<button class="link" data-act="many">📁 자료 한꺼번에 넣기 (번호_이름_주제.pdf)</button>`;$('#pager').innerHTML='';return}
+  $('#fileCap').innerHTML=`<span class="file"><b>${m.kind==='img'?'IMG':'PDF'}</b><span>${esc(m.name)}</span><button data-act="del" title="자료 빼기">✕</button></span><button class="link" data-act="many">+ 자료 넣기</button>`;
+  $('#pager').innerHTML=mat.pages>1?`<button data-act="prev">◀</button>${mat.page} <span style="color:var(--muted)">/ ${mat.pages}</span><button data-act="next">▶</button>`:'';
+  if(m.kind==='img'){fr.innerHTML=`<img src="${m.url}" alt="">`}
+  else if(m.kind==='nopdf'){fr.innerHTML=`<div class="empty"><b>PDF를 열 수 없어요</b><p>PDF 보기 도구를 불러오지 못했어요. 인터넷 연결을 확인해 주세요.</p></div>`}
+  else{const cv=document.createElement('canvas');fr.innerHTML='';fr.appendChild(cv);await drawPage(m,cv,fr.clientWidth-16,fr.clientHeight-16)}
+}
+function turn(d){if(!mat.pages)return;const p=Math.max(1,Math.min(mat.pages,mat.page+d));if(p===mat.page)return;mat.page=p;showMaterial();tvSync()}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b)return;const k=b.dataset.act;
+  if(k==='prev')turn(-1);if(k==='next')turn(1);if(k==='one')$('#fOne').click();if(k==='many')$('#fMat').click();
+  if(k==='del'){const id=curId();if(!id||!confirm('이 학생의 발표 자료를 뺄까요? (원본 파일은 컴퓨터에 그대로 있어요)'))return;DB.del(fkey(id)).then(()=>{matCache.delete(fkey(id));renderPresent();tvSync()})}});
+$('#fOne').addEventListener('change',async e=>{const f=e.target.files[0];e.target.value='';const id=curId();if(f&&id){await putFile(id,f);renderPresent();tvSync()}});
+$('#fMat').addEventListener('change',async e=>{const fs=[...e.target.files];e.target.value='';bulkFiles(fs)});
+const fr=$('#frame');
+fr.addEventListener('dragover',e=>{e.preventDefault();fr.classList.add('drag')});
+fr.addEventListener('dragleave',()=>fr.classList.remove('drag'));
+fr.addEventListener('drop',async e=>{e.preventDefault();fr.classList.remove('drag');const fs=await droppedFiles(e.dataTransfer);if(!fs.length)return;
+  const id=curId();if(fs.length===1&&id&&!matchFile(fs[0].name)){await putFile(id,fs[0]);renderPresent();tvSync()}else bulkFiles(fs)});
+async function droppedFiles(dt){const out=[],items=[...(dt.items||[])].map(i=>i.webkitGetAsEntry&&i.webkitGetAsEntry()).filter(Boolean);
+  if(!items.length)return[...dt.files];
+  const walk=en=>new Promise(ok=>{if(en.isFile)en.file(f=>{out.push(f);ok()},()=>ok());else{const r=en.createReader();const all=[];const rd=()=>r.readEntries(async es=>{if(!es.length){for(const x of all)await walk(x);ok()}else{all.push(...es);rd()}},()=>ok());rd()}});
+  for(const en of items)await walk(en);return out}
+async function putFile(sid,f){if(!/pdf|image/i.test(f.type)&&!/\.(pdf|png|jpe?g|gif|webp)$/i.test(f.name)){toast(`${f.name}: PDF나 그림 파일만 넣을 수 있어요 (PPT는 PDF로 저장해 주세요)`);return false}
+  await DB.put(fkey(sid),{name:f.name,type:f.type||'application/pdf',blob:f});matCache.delete(fkey(sid));
+  const r=rec(sid);if(!r.topic){const t=topicFrom(f.name,stu(sid));if(t){r.topic=t;save()}}return true}
+// 학번(20307)이나 번호(07) 모두 끝 두 자리를 번호로 본다
+const noFrom=v=>{const d=String(v).trim().match(/^\d{1,5}$/);return d?+d[0].slice(-2):null};
+function matchFile(name){const c=cls(),base=name.replace(/\.[^.]+$/,'');
+  const m=base.match(/^\s*(\d{1,5})(?!\d)/),num=m?noFrom(m[1]):null;
+  let byName=c.students.filter(s=>base.includes(s.name));
+  const L=Math.max(0,...byName.map(s=>s.name.length));byName=byName.filter(s=>s.name.length===L);
+  if(byName.length===1)return byName[0];
+  if(byName.length>1)return byName.find(s=>s.no===num)||null; // 동명이인은 번호까지 맞아야 연결
+  return num!=null?c.students.find(s=>s.no===num)||null:null}
+function topicFrom(name,s){const base=name.replace(/\.[^.]+$/,'');const parts=base.split(/[_\-]+/).map(x=>x.trim()).filter(Boolean);
+  const rest=parts.filter(p=>!/^\d+$/.test(p)&&p!==s?.name).map(p=>p.replace(/^\d{1,5}(?=[가-힣])/,'').replace(s?.name||'\u0000',''));return rest.join(' ')}
+async function bulkFiles(fs){let ok=0;const miss=[];for(const f of fs){if(f.name.startsWith('.'))continue;const s=matchFile(f.name);if(!s){miss.push(f.name);continue}if(await putFile(s.id,f))ok++}
+  renderPresent();tvSync();toast(`${ok}명 자료 연결${miss.length?` · ${miss.length}개는 이름을 못 찾았어요`:''}`);
+  if(miss.length)setTimeout(()=>alert('연결하지 못한 파일:\n'+miss.join('\n')+'\n\n파일 이름을 "번호_이름_주제.pdf"로 바꾸면 자동으로 연결돼요. 같은 이름의 학생이 있으면 번호(또는 학번)가 맞아야 연결돼요.'),300)}
+
+/* ───────── TV 화면 (두 번째 모니터) ───────── */
+let tv=null;
+const TV_HTML=`<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>발표 무대 · TV</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",sans-serif;color:#1d2433;background:linear-gradient(180deg,#e9f5ff 0%,#f4f9f2 55%,#fbfaf6 100%);cursor:default}
+.blob{position:absolute;border-radius:50%}
+.v{position:absolute;inset:0;display:none}
+.v.on{display:block}
+.cc{position:absolute;left:0;right:0;top:13vh;text-align:center;padding:0 6vw}
+.lbl{display:inline-flex;align-items:center;gap:.6em;background:#fff;border-radius:999px;padding:.55em 1.3em;font-size:2.6vh;font-weight:700;color:#16916b;box-shadow:0 10px 24px -16px rgba(29,36,51,.4)}
+.lbl:before{content:"";width:1.4vh;height:1.4vh;border-radius:50%;background:#22b386;box-shadow:0 0 0 .7vh rgba(34,179,134,.2)}
+h1{font-size:17vh;font-weight:800;letter-spacing:-.02em;margin:3vh 0 1vh;line-height:1.05}
+h2{font-size:8vh;font-weight:800;letter-spacing:-.03em;margin:3vh 0 1vh}
+.tp{font-size:3.8vh;color:#4c5463;font-weight:500}
+.tp b{font-family:"Space Grotesk",sans-serif;color:#16916b;margin-right:.4em}
+.ask{margin-top:3.5vh;font-size:3vh;color:#6b7280}
+.illo{position:absolute;left:50%;bottom:0;transform:translateX(-50%);width:38vh;height:33vh}
+#mat{background:#f6f8f4}
+.sl{position:absolute;left:4vw;right:4vw;top:4vh;bottom:13vh;display:grid;place-items:center}
+.sl canvas,.sl img{max-width:100%;max-height:100%;border-radius:1.2vh;box-shadow:0 4vh 7vh -4vh rgba(29,36,51,.45);background:#fff}
+.lower{position:absolute;left:4vw;right:4vw;bottom:3.5vh;display:flex;align-items:center;gap:1.6vh}
+.chip{display:flex;align-items:center;gap:1.4vh;background:#fff;border-radius:999px;padding:1vh 2.6vh 1vh 1.2vh;box-shadow:0 10px 24px -14px rgba(29,36,51,.35)}
+.av{width:5vh;height:5vh;border-radius:50%;background:#22b386;color:#fff;display:grid;place-items:center;font-weight:800;font-size:2.2vh}
+.chip b{font-size:3.2vh;font-weight:800}
+.no{font-family:"Space Grotesk",sans-serif;font-size:2vh;font-weight:700;color:#16916b;background:#dcf4ea;border-radius:999px;padding:.4vh 1.2vh}
+.ltp{font-size:2.6vh;color:#555c69}
+.pgn{margin-left:auto;font-family:"Space Grotesk",sans-serif;font-size:2.4vh;color:#7b7f89}
+.ord{display:grid;grid-template-columns:repeat(4,1fr);gap:1.4vh 2vw;margin:4vh auto 0;max-width:82vw;text-align:left}
+.ord div{background:#fff;border-radius:1.6vh;padding:1.2vh 1.6vh;font-size:2.6vh;font-weight:700;display:flex;gap:1.2vh;align-items:center;box-shadow:0 8px 20px -16px rgba(29,36,51,.4)}
+.ord i{font-style:normal;font-family:"Space Grotesk",sans-serif;width:4vh;height:4vh;border-radius:50%;background:#f4f2ec;display:grid;place-items:center;font-size:1.9vh;flex:none}
+.ord div:nth-child(1) i{background:#ffd24a}.ord div:nth-child(2) i{background:#e3e6ea}.ord div:nth-child(3) i{background:#ffd3c6}
+.hint{position:fixed;right:2vh;bottom:2vh;font-size:13px;color:#7b7f89;background:rgba(255,255,255,.8);padding:6px 12px;border-radius:999px;transition:opacity .5s}
+</style></head><body>
+<div class="blob" style="width:60vh;height:60vh;left:-22vh;top:-18vh;background:#d8f1e6;opacity:.8"></div>
+<div class="blob" style="width:48vh;height:48vh;right:-16vh;top:-8vh;background:#ebe5ff;opacity:.8"></div>
+<div class="blob" style="width:40vh;height:40vh;left:16vh;bottom:-28vh;background:#fff0bd"></div>
+<section class="v" id="idle"><div class="cc"><span class="lbl" id="iLbl">곧 발표가 시작돼요</span><h2 id="iTitle"></h2><div class="tp" id="iSub"></div><div class="ord" id="iOrd"></div></div><svg class="illo" id="iIllo" viewBox="0 0 340 300"></svg></section>
+<section class="v" id="nomat"><div class="cc"><span class="lbl">지금 발표하는 친구</span><h1 id="nName"></h1><div class="tp" id="nTopic"></div><div class="ask">친구의 이야기에 귀 기울여 주세요 👂</div></div><svg class="illo" id="nIllo" viewBox="0 0 340 300"></svg></section>
+<section class="v" id="mat"><div class="sl" id="slot"></div><div class="lower"><div class="chip"><span class="av" id="mAv"></span><b id="mName"></b><span class="no" id="mNo"></span></div><span class="ltp" id="mTopic"></span><span class="pgn" id="mPg"></span></div></section>
+<div class="hint" id="hint">이 창을 TV 화면으로 옮긴 뒤 더블클릭하면 전체 화면이 돼요</div>
+<script>document.addEventListener('dblclick',()=>{if(!document.fullscreenElement)document.documentElement.requestFullscreen().catch(()=>{});else document.exitFullscreen()});
+setTimeout(()=>document.getElementById('hint').style.opacity=0,8000);<\/script>
+</body></html>`;
+function openTV(){
+  if(tv&&!tv.closed){tv.focus();return}
+  tv=window.open('','balpyo-tv','popup,width=1280,height=720');
+  if(!tv){toast('팝업이 막혔어요. 주소창 오른쪽에서 팝업을 허용해 주세요.');return}
+  if(!tv.document.getElementById('slot')){tv.document.open();tv.document.write(TV_HTML);tv.document.close()}
+  const podium=document.getElementById('podium').innerHTML;
+  ['iIllo','nIllo'].forEach(i=>tv.document.getElementById(i).innerHTML=podium);
+  tv.addEventListener('resize',()=>{tvSig='';tvSync()});
+  tvSig='';tvSync();tvBtn()}
+function tvBtn(){const on=tv&&!tv.closed;$('#tvBtn').classList.toggle('on',on);$('#tvBtn span').textContent=on?'TV 화면 연결됨':'TV 화면 열기'}
+setInterval(tvBtn,1500);
+$('#tvBtn').addEventListener('click',openTV);
+let tvSig='',tvSeq=0;
+async function tvSync(){
+  if(!tv||tv.closed)return;const d=tv.document;if(!d.getElementById('slot'))return;
+  const c=cls(),a=act();const show=v=>['idle','nomat','mat'].forEach(x=>d.getElementById(x).classList.toggle('on',x===v));
+  if(!c){show('idle');d.getElementById('iTitle').textContent='발표 무대';return}
+  const id=curId(),r=id?a.recs[id]:null,inPresent=S.tab==='present';
+  if(!inPresent||!id){
+    const list=(race.running||race.finish.length)?race.finish:a.order.filter(x=>!a.absent.includes(x));
+    d.getElementById('iLbl').textContent=race.running?'발표 순서를 정하고 있어요':list.length?'오늘의 발표 순서':'곧 발표가 시작돼요';
+    d.getElementById('iTitle').textContent=a.title;
+    d.getElementById('iSub').textContent=`${c.name} · ${queue().length}명`;
+    d.getElementById('iOrd').innerHTML=list.slice(0,28).map((x,i)=>`<div><i>${i+1}</i>${esc(stu(x)?.name||'')}</div>`).join('');
+    d.getElementById('iIllo').style.display=list.length>8?'none':'';
+    show('idle');tvSig='';return}
+  const s=stu(id),topic=r?.topic||'';
+  const m=await loadMat(id);
+  if(!m||m.kind==='nopdf'){d.getElementById('nName').textContent=s.name;d.getElementById('nTopic').innerHTML=`<b>No.${pad2(s.no)}</b>${esc(topic)}`;show('nomat');tvSig='';return}
+  d.getElementById('mAv').textContent=s.name[0];d.getElementById('mName').textContent=s.name;d.getElementById('mNo').textContent='No.'+pad2(s.no);
+  d.getElementById('mTopic').textContent=topic;d.getElementById('mPg').textContent=m.pages>1?`${mat.page} / ${m.pages}`:'';
+  show('mat');
+  const sig=fkey(id)+'#'+mat.page;if(sig===tvSig)return;tvSig=sig;const seq=++tvSeq;
+  const slot=d.getElementById('slot');
+  if(m.kind==='img'){slot.innerHTML='';const im=d.createElement('img');im.src=m.url;slot.appendChild(im)}
+  else{const cv=d.createElement('canvas');await drawPage(m,cv,slot.clientWidth,slot.clientHeight);if(seq!==tvSeq)return;slot.innerHTML='';slot.appendChild(cv)}
+}
+
+/* ───────── 03 기록 정리 ───────── */
+function rows(){const c=cls(),a=act(),q=queue(),ab=new Set(a.absent);
+  const order=q.concat(c.students.filter(s=>ab.has(s.id)).map(s=>s.id));
+  return order.map((id,i)=>{const s=stu(id),r=a.recs[id]||{},j=r.done?judge(r.acc,a):null;
+    return{id,ord:ab.has(id)?'결석':i+1,no:s.no,name:s.name,topic:r.topic||'',sec:r.done?r.acc:0,j,absent:ab.has(id),skipped:!!r.skipped,done:!!r.done,transcript:r.transcript||'',memo:r.memo||''}})}
+async function renderRecords(){const c=cls(),a=act(),rs=rows(),keys=await getMatKeys();
+  $('#recSub').textContent=`${c.name} · ${a.date} · ${fmt(a.minSec)}~${fmt(a.maxSec)}`;
+  $('#recTitle').textContent=a.title;
+  const cnt=k=>rs.filter(r=>r.j===k).length,none=rs.filter(r=>!r.done&&!r.absent).length;
+  const mats=rs.filter(r=>keys.has(fkey(r.id))).length;
+  $('#stats').innerHTML=[['적정',cnt('ok'),'var(--mint-dk)'],['짧음',cnt('short'),'#6b7280'],['초과',cnt('over'),'var(--over)'],['아직',none,'var(--ink)'],['결석',a.absent.length,'var(--muted)'],['자료 제출',mats,'#d9553a']]
+    .map(([k,v,col])=>`<div class="stat"><span class="eyebrow">${k}</span><b style="color:${col}">${v}명</b></div>`).join('');
+  $('#recBody').innerHTML=rs.map(r=>`<tr class="click" data-id="${r.id}"><td class="num">${r.ord}</td><td class="num">${r.no}</td><td class="nm"><b>${esc(r.name)}</b></td><td>${esc(r.topic)||'<span style="color:var(--muted)">—</span>'}</td><td class="num">${r.done?fmt(r.sec):'—'}</td>
+    <td>${r.absent?'<span class="pill p-none">결석</span>':r.j?`<span class="pill ${JUDGE[r.j][1]}">${JUDGE[r.j][0]}</span>`:r.skipped?'<span class="pill p-none">건너뜀</span>':'<span class="pill p-none">미발표</span>'}</td>
+    <td>${keys.has(fkey(r.id))?'<span class="pill p-near">있음</span>':''}</td><td><div class="clip">${esc(r.transcript)}</div></td><td><div class="clip">${esc(r.memo)}</div></td></tr>`).join('');
+}
+$('#recBody').addEventListener('click',e=>{const tr=e.target.closest('tr');if(tr)editRec(tr.dataset.id)});
+function editRec(id){const s=stu(id),r=rec(id),a=act();
+  const m=modal(`<h3>${esc(s.name)} <small style="font-size:14px;color:var(--muted);font-weight:500">${s.no}번</small><button data-x>✕</button></h3>
+  <div class="sec"><div class="grid3"><label class="fld">발표 주제<input id="eTopic" value="${esc(r.topic)}"></label><label class="fld">발표 시간 (분:초)<input id="eTime" value="${r.acc?fmt(r.acc):''}" placeholder="2:30"></label>
+  <label class="fld">상태<select id="eDone"><option value="1" ${r.done?'selected':''}>발표함</option><option value="0" ${!r.done?'selected':''}>아직</option></select></label></div>
+  <label class="fld" style="margin-top:12px">발표 내용 (음성 인식)<textarea id="eTrans" rows="6">${esc(r.transcript)}</textarea></label>
+  <label class="fld" style="margin-top:12px">관찰 메모<textarea id="eMemo" rows="3">${esc(r.memo)}</textarea></label>
+  <div class="rowbtns"><button class="btn sm mint" id="eSave">저장</button><button class="btn sm white" data-x>닫기</button></div></div>`);
+  m.querySelector('#eSave').onclick=()=>{r.topic=m.querySelector('#eTopic').value.trim();r.transcript=m.querySelector('#eTrans').value;r.memo=m.querySelector('#eMemo').value;
+    const t=m.querySelector('#eTime').value.trim().match(/^(\d+)(?::(\d{1,2}))?$/);if(t)r.acc=t[2]!=null?(+t[1])*60+(+t[2]):+t[1];
+    r.done=m.querySelector('#eDone').value==='1';save();m.remove();renderRecords();toast('저장했어요.')}}
+
+$('#printBtn').addEventListener('click',()=>{const c=cls(),a=act(),rs=rows().filter(r=>!r.absent);
+  $('#printArea').innerHTML=`<h1>${esc(a.title)} 발표 순서</h1><p>${esc(c.name)} · ${a.date} · 발표 시간 ${fmt(a.minSec)}~${fmt(a.maxSec)}</p>
+  <table><thead><tr><th style="width:12mm">순서</th><th style="width:14mm">번호</th><th style="width:30mm">이름</th><th>발표 주제</th><th style="width:20mm">시간</th><th style="width:16mm">확인</th></tr></thead>
+  <tbody>${rs.map(r=>`<tr><td>${r.ord}</td><td>${r.no}</td><td>${esc(r.name)}</td><td>${esc(r.topic)}</td><td>${r.done?fmt(r.sec):''}</td><td></td></tr>`).join('')}</tbody></table>`;
+  window.print()});
+$('#xlsBtn').addEventListener('click',()=>{const c=cls(),a=act();
+  const head=['순서','번호','이름','발표 주제','발표 시간','시간(초)','판정','발표 내용(음성 인식)','관찰 메모'];
+  const data=rows().map(r=>[r.ord,r.no,r.name,r.topic,r.done?fmt(r.sec):'',r.done?Math.round(r.sec):'',r.absent?'결석':r.j?JUDGE[r.j][0]:'미발표',r.transcript,r.memo]);
+  const fname=`${c.name}_${a.title}_발표기록_${a.date}`.replace(/[\\/:*?"<>|]/g,'');
+  if(window.XLSX){const ws=XLSX.utils.aoa_to_sheet([[`${c.name} · ${a.title} 발표 기록 (${a.date})`],[],head,...data]);
+    ws['!cols']=[{wch:6},{wch:6},{wch:10},{wch:28},{wch:10},{wch:8},{wch:8},{wch:60},{wch:40}];
+    const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'발표 기록');XLSX.writeFile(wb,fname+'.xlsx')}
+  else{const csv=[head,...data].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\r\n');
+    download(new Blob(['﻿'+csv],{type:'text/csv'}),fname+'.csv');toast('엑셀 도구를 못 불러와 CSV로 저장했어요 (엑셀에서 열려요).')}});
+function download(blob,name){const u=URL.createObjectURL(blob),l=document.createElement('a');l.href=u;l.download=name;document.body.appendChild(l);l.click();l.remove();setTimeout(()=>URL.revokeObjectURL(u),2000)}
+
+/* 세특 프롬프트 */
+$('#promptBtn').addEventListener('click',()=>{const st=S.settings,a=act();
+  const done=rows().filter(r=>r.done);
+  const m=modal(`<h3>세특 프롬프트 만들기<button data-x>✕</button></h3>
+  <div class="warn" style="margin-top:14px">이 프롬프트를 ChatGPT·Gemini·Claude 같은 AI에 붙여 넣으면 그 내용이 AI 회사 서버로 전송돼요. <b>학생 이름 빼기</b>를 켜 두면 이름 대신 '학생 01'처럼 순번으로 바뀌어요. 학교·교육청의 생성형 AI 사용 지침을 먼저 확인하고, AI가 쓴 초안은 반드시 선생님이 사실을 확인한 뒤 고쳐 써 주세요.</div>
+  <div class="sec"><div class="grid3"><label class="fld">과목<input id="pSub" value="${esc(st.subject)}" placeholder="예) 통합사회"></label><label class="fld">분량 (자)<input id="pChars" type="number" value="${st.chars}" min="100" step="50"></label>
+  <label class="fld">한 번에 넣을 인원<select id="pGroup">${[3,5,8,10].map(n=>`<option ${n==st.group?'selected':''}>${n}</option>`).join('')}</select></label></div>
+  <label style="display:flex;gap:8px;align-items:center;margin-top:12px;font-size:14px;font-weight:600"><input type="checkbox" id="pAnon" ${st.anon?'checked':''}> 학생 이름 빼기 (권장)</label>
+  <p class="help" style="margin-top:10px">발표한 학생 ${done.length}명 중 관찰 메모가 있는 학생 ${done.filter(r=>r.memo.trim()).length}명 · 메모가 있으면 초안이 훨씬 정확해져요.</p>
+  <div id="pOut"></div></div>`);
+  const build=()=>{st.subject=m.querySelector('#pSub').value.trim();st.chars=+m.querySelector('#pChars').value||500;st.group=+m.querySelector('#pGroup').value;st.anon=m.querySelector('#pAnon').checked;save();
+    const groups=[];for(let i=0;i<done.length;i+=st.group)groups.push(done.slice(i,i+st.group));
+    const label=(r,i)=>st.anon?`학생 ${pad2(i+1)}`:`${r.name}`;
+    let idx=0;const texts=groups.map(g=>{const body=g.map(r=>{const i=idx++;
+      const t=st.anon?r.transcript.split(r.name).join('○○○'):r.transcript;const mm=st.anon?r.memo.split(r.name).join('○○○'):r.memo;
+      return `■ ${label(r,i)}\n- 발표 주제: ${r.topic||'(없음)'}\n- 발표 시간: ${fmt(r.sec)}\n- 발표 내용(음성 인식): ${t.trim()||'(기록 없음)'}\n- 교사 관찰: ${mm.trim()||'(없음)'}`}).join('\n\n');
+      return `너는 한국 고등학교 ${st.subject||'교과'} 교사의 학교생활기록부 '교과 세부능력 및 특기사항' 작성을 돕는 조력자야.\n아래는 '${a.title}' 시간에 학생들이 한 발표를 음성 인식으로 받아 적은 글과 교사의 관찰 기록이야. 음성 인식이라 틀린 글자나 끊긴 문장이 있을 수 있으니 뜻을 살려 읽어 줘.\n\n[작성 기준]\n1. 먼저 학생별 발표 주제와 핵심 내용을 2~3줄로 정리해 줘.\n2. 이어서 학생별 세특 초안을 공백 포함 ${st.chars}자 이내 한 문단으로 써 줘.\n3. 문체는 '~함', '~임', '~보임' 같은 명사형 종결로 써 줘.\n4. 교사 관찰 기록을 가장 중요한 근거로 삼고, 자료에 없는 사실은 지어내지 마. 근거가 부족하면 [근거 부족]이라고 표시해 줘.\n5. 학생 이름, 학교명, 특정 기관·상호명, 교외 수상, 부모 정보 등 학교생활기록부 기재 금지 사항은 쓰지 마.\n\n[학생 자료]\n${body}`});
+    let map='';if(st.anon){let k=0;map='<div class="map"><b>순번 ↔ 이름 (선생님만 보는 표, 프롬프트에는 들어가지 않아요)</b><br>'+done.map(r=>`학생 ${pad2(++k)} = ${esc(r.name)}`).join(' · ')+'</div>'}
+    m.querySelector('#pOut').innerHTML=(texts.length?texts.map((t,i)=>`<div class="pbox"><header>묶음 ${i+1} · ${t.length.toLocaleString()}자<button class="btn sm white" data-copy="${i}">📋 복사</button></header><pre>${esc(t)}</pre></div>`).join(''):'<p class="help">아직 발표를 마친 학생이 없어요.</p>')
+      +map+(texts.length?`<div class="rowbtns"><button class="btn sm white" id="pSave">⬇ 텍스트 파일로 저장</button></div>`:'');
+    m.querySelectorAll('[data-copy]').forEach(b=>b.onclick=()=>{navigator.clipboard.writeText(texts[+b.dataset.copy]).then(()=>toast('복사했어요. AI 대화창에 붙여 넣으세요.'),()=>toast('복사가 막혔어요. 글을 직접 선택해 복사해 주세요.'))});
+    const sv=m.querySelector('#pSave');if(sv)sv.onclick=()=>download(new Blob([texts.join('\n\n────────────\n\n')],{type:'text/plain'}),`${cls().name}_${a.title}_세특프롬프트.txt`)};
+  m.querySelectorAll('input,select').forEach(x=>x.addEventListener('change',build));build()});
+
+/* ───────── 모달 & 설정 ───────── */
+function modal(html){const m=document.createElement('div');m.className='modal';m.innerHTML=`<div class="sheet">${html}</div>`;document.body.appendChild(m);
+  m.addEventListener('click',e=>{if(e.target===m||e.target.closest('[data-x]'))m.remove()});return m}
+function parseRoster(txt){const out=[];txt.split(/\r?\n/).forEach(line=>{const p=line.trim().split(/[\t,]+|\s+/).filter(Boolean);if(!p.length)return;
+  let no=null,name=null;if(/^\d{1,5}$/.test(p[0])){no=noFrom(p[0]);name=p.slice(1).join('')}else name=p.join('');
+  if(name&&!/^(이름|성명|번호)$/.test(name))out.push({no,name})});
+  out.forEach((s,i)=>{if(s.no==null)s.no=i+1});return out}
+function openSettings(newClass){
+  const c=cls(),a=act();
+  const m=modal(`<h3>설정<button data-x>✕</button></h3>
+  ${S.classes.length?`<div class="sec"><h5>반</h5><div class="clist">${S.classes.map(x=>`<div class="citem ${x.id===S.classId?'on':''}"><span>${esc(x.name)}</span><small>${x.students.length}명 · 활동 ${x.activities.length}개</small><span class="sp"></span><button class="btn sm white" data-pick="${x.id}">선택</button><button class="btn sm ghost" data-delc="${x.id}">삭제</button></div>`).join('')}</div></div>`:''}
+  <div class="sec" id="rosterSec"><h5>${newClass||!c?'새 반 만들기':'명단 고치기 · '+esc(c.name)}</h5>
+  <p class="help">한 줄에 한 명씩 "번호 이름"으로 붙여 넣으세요. 엑셀에서 번호·이름 두 칸을 복사해 붙여도 돼요.${!newClass&&c?' 이미 있는 학생의 기록은 이름이 같으면 그대로 이어져요.':''}</p>
+  <div class="grid2" style="grid-template-columns:1fr 2fr"><label class="fld">반 이름<input id="sName" value="${newClass||!c?'':esc(c.name)}" placeholder="예) 2학년 3반"></label>
+  <label class="fld">명단<textarea id="sRoster" rows="7" placeholder="1 김가온&#10;2 김도현&#10;3 나윤서">${newClass||!c?'':c.students.slice().sort((x,y)=>x.no-y.no).map(s=>s.no+' '+s.name).join('\n')}</textarea></label></div>
+  <div class="rowbtns"><button class="btn sm mint" id="sSave">${newClass||!c?'반 만들기':'명단 저장'}</button><button class="btn sm white" id="sXls">엑셀 파일에서 불러오기</button>${!newClass&&c?'<button class="btn sm ghost" id="sNew">+ 새 반</button>':''}</div></div>
+  ${c&&!newClass?`<div class="sec"><h5>발표 활동</h5>
+  <div class="grid3"><label class="fld">활동 이름<input id="aTitle" value="${esc(a.title)}"></label><label class="fld">최소 시간 (분:초)<input id="aMin" value="${fmt(a.minSec)}"></label><label class="fld">최대 시간 (분:초)<input id="aMax" value="${fmt(a.maxSec)}"></label></div>
+  <div class="grid2" style="margin-top:12px"><label class="fld">지난 활동 보기<select id="aPick">${c.activities.map(x=>`<option value="${x.id}" ${x.id===a.id?'selected':''}>${esc(x.title)} · ${x.date}</option>`).join('')}</select></label><div></div></div>
+  <div class="rowbtns"><button class="btn sm mint" id="aSave">저장</button><button class="btn sm white" id="aNew">+ 새 발표 활동 시작</button><span class="help" style="font-size:12.5px;color:var(--muted)">새 활동을 시작해도 지난 기록은 남아 있어요.</span></div></div>`:''}
+  <div class="sec"><h5>백업</h5><p class="help">기록은 이 컴퓨터의 이 브라우저에만 저장돼요. 다른 컴퓨터로 옮기거나 브라우저 기록을 지우기 전에 백업 파일로 저장해 두세요. (발표 자료 파일은 백업에 들어가지 않아요)</p>
+  <div class="rowbtns"><button class="btn sm white" id="bSave">⬇ 백업 파일 저장</button><button class="btn sm white" id="bLoad">⬆ 백업 불러오기</button></div></div>`);
+  m.querySelectorAll('[data-pick]').forEach(b=>b.onclick=()=>{if(T.running)pauseTimer();S.classId=b.dataset.pick;race.reset();matCache.clear();save();m.remove();render()});
+  m.querySelectorAll('[data-delc]').forEach(b=>b.onclick=()=>{const x=S.classes.find(k=>k.id===b.dataset.delc);
+    if(prompt(`'${x.name}'의 명단과 발표 기록이 모두 지워져요. 지우려면 반 이름을 그대로 입력하세요.`)!==x.name)return;
+    S.classes=S.classes.filter(k=>k!==x);if(S.classId===x.id)S.classId=S.classes[0]?.id||null;saveNow();m.remove();render();toast('반을 지웠어요.')});
+  m.querySelector('#sSave').onclick=()=>{const name=m.querySelector('#sName').value.trim(),list=parseRoster(m.querySelector('#sRoster').value);
+    if(!name)return toast('반 이름을 적어 주세요.');if(!list.length)return toast('명단을 붙여 넣어 주세요.');
+    if(newClass||!c){const k={id:uid(),name,students:list.map(s=>({id:uid(),no:s.no,name:s.name})),activities:[newActivity('발표 수업')]};k.actId=k.activities[0].id;S.classes.push(k);S.classId=k.id;S.tab='order'}
+    else{c.name=name;const old=c.students;c.students=list.map(s=>{const o=old.find(x=>x.name===s.name);return{id:o?o.id:uid(),no:s.no,name:s.name}})}
+    race.reset();saveNow();m.remove();render();toast(`${name} · ${list.length}명 저장`)};
+  m.querySelector('#sXls').onclick=()=>{const f=$('#fXls');f.onchange=async()=>{const file=f.files[0];f.value='';if(!file)return;
+    try{const txt=await rosterFromFile(file);m.querySelector('#sRoster').value=txt;if(!m.querySelector('#sName').value)m.querySelector('#sName').value=file.name.replace(/\.[^.]+$/,'');toast('명단을 불러왔어요. 확인 후 저장을 누르세요.')}catch(e){toast(e.message)}};f.click()};
+  const nb=m.querySelector('#sNew');if(nb)nb.onclick=()=>{m.remove();openSettings(true)};
+  if(c&&!newClass){
+    const toSec=v=>{const t=String(v).trim().match(/^(\d+)(?::(\d{1,2}))?$/);return t?(t[2]!=null?(+t[1])*60+(+t[2]):(+t[1])*60):null};
+    m.querySelector('#aSave').onclick=()=>{const mn=toSec(m.querySelector('#aMin').value),mx=toSec(m.querySelector('#aMax').value);
+      if(mn==null||mx==null||mx<=mn)return toast('시간은 "2:00"처럼 적고, 최대가 최소보다 길어야 해요.');
+      a.title=m.querySelector('#aTitle').value.trim()||a.title;a.minSec=mn;a.maxSec=mx;saveNow();m.remove();render();toast('저장했어요.')};
+    m.querySelector('#aNew').onclick=()=>{const t=prompt('새 발표 활동 이름','발표 수업');if(!t)return;if(T.running)pauseTimer();const n=newActivity(t.trim());n.minSec=a.minSec;n.maxSec=a.maxSec;c.activities.push(n);c.actId=n.id;race.reset();matCache.clear();S.tab='order';saveNow();m.remove();render();toast('새 활동을 시작했어요.')};
+    m.querySelector('#aPick').onchange=e=>{if(T.running)pauseTimer();c.actId=e.target.value;race.reset();matCache.clear();saveNow();m.remove();render()};
+  }
+  m.querySelector('#bSave').onclick=()=>{saveNow();download(new Blob([JSON.stringify(S,null,1)],{type:'application/json'}),`발표무대_백업_${today()}.json`)};
+  m.querySelector('#bLoad').onclick=()=>{const f=$('#fBak');f.onchange=async()=>{const file=f.files[0];f.value='';if(!file)return;
+    try{const d=JSON.parse(await file.text());if(!Array.isArray(d.classes))throw 0;
+      if(!confirm(`백업의 반 ${d.classes.length}개를 불러올까요? 같은 반은 백업 내용으로 바뀌고, 백업에 없는 반은 그대로 남아요.`))return;
+      d.classes.forEach(k=>{const i=S.classes.findIndex(x=>x.id===k.id);if(i>=0)S.classes[i]=k;else S.classes.push(k)});
+      if(!S.classId)S.classId=d.classes[0]?.id;saveNow();m.remove();render();toast('백업을 불러왔어요.')}catch(e){toast('백업 파일이 아니에요.')}};f.click()};
+}
+async function rosterFromFile(file){
+  if(/\.csv$/i.test(file.name)){return parseRows((await file.text()).split(/\r?\n/).map(l=>l.split(',')))}
+  if(!window.XLSX)throw new Error('엑셀 도구를 불러오지 못했어요. 명단을 복사해 붙여 넣어 주세요.');
+  const wb=XLSX.read(await file.arrayBuffer());const ws=wb.Sheets[wb.SheetNames[0]];
+  return parseRows(XLSX.utils.sheet_to_json(ws,{header:1,defval:''}))}
+function parseRows(rows){let hi=rows.findIndex(r=>r.some(v=>/이름|성명/.test(String(v))));let ni=-1,bi=-1,start=0;
+  if(hi>=0){ni=rows[hi].findIndex(v=>/이름|성명/.test(String(v)));bi=rows[hi].findIndex(v=>/번호|학번/.test(String(v)));start=hi+1}
+  else{const r=rows.find(r=>r.some(v=>/^[가-힣]{2,5}$/.test(String(v).trim())))||[];ni=r.findIndex(v=>/^[가-힣]{2,5}$/.test(String(v).trim()));bi=r.findIndex(v=>/^\d{1,2}$/.test(String(v).trim()))}
+  if(ni<0)throw new Error('이름 칸을 찾지 못했어요. 첫 줄에 "번호", "이름" 제목을 넣어 주세요.');
+  const out=[];rows.slice(start).forEach(r=>{const n=String(r[ni]??'').trim();if(!n||/이름|성명/.test(n))return;const b=bi>=0?String(r[bi]??'').trim():'';out.push((/^\d{1,5}$/.test(b)?noFrom(b)+' ':'')+n)});
+  if(!out.length)throw new Error('명단이 비어 있어요.');return out.join('\n')}
+$('#setBtn').addEventListener('click',()=>openSettings(false));
+$('#wAdd').addEventListener('click',()=>openSettings(true));
+$('#wDemo').addEventListener('click',()=>{
+  const names=['김가온','김도현','나윤서','문시우','박서연','박준호','배하린','서지안','송유나','신재원','안다은','양현우','오채원','유민재','윤서아','이도윤','이수빈','임태오','장예린','정민준','조은호','최하은','한지우','허승민','홍채아'];
+  const k={id:uid(),name:'예시 반',students:names.map((n,i)=>({id:uid(),no:i+1,name:n})),activities:[newActivity('진로 탐색 발표')]};k.actId=k.activities[0].id;
+  S.classes.push(k);S.classId=k.id;S.tab='order';saveNow();render();toast('예시 반을 만들었어요. 설정에서 언제든 지울 수 있어요.')});
+
+/* 시작 */
+load();
+if(S.classId&&!cls())S.classId=S.classes[0]?.id||null;
+// 갑자기 꺼졌을 때 재던 시간은 멈춤 상태로 이어 붙인다 (최대 1분만 더함)
+S.classes.forEach(c=>c.activities.forEach(a=>Object.values(a.recs).forEach(r=>{if(r.runAt){r.acc+=Math.min(60,Math.max(0,(Date.now()-r.runAt)/1000));r.runAt=0}})));
+micUI();render();
+window.addEventListener('resize',()=>{if(S.tab==='present'&&mat.kind==='pdf')showMaterial()});
+</script>
+</body>
+</html>
